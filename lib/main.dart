@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'question.dart';
+import 'quizBrain.dart';
+import 'dart:math';
 import 'dart:developer' as dev;
 
 void main() => runApp(Quizzler());
@@ -27,19 +30,25 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
   List<Icon> scorekeeper = [];
-  List<String> questions = [
-    'Can you lead a cow downstairs?',
-    'A slug\'s blood is green.'
-  ];
 
-  List<bool> answers = [
-    false, true
-  ];
+  QuizBrain quizBrain = QuizBrain();
 
-  int questionNum = 0;
+  int randomQuestionNum(){
+    int q = quizBrain.questionBank.length;
+    int questionNum = new Random().nextInt(q);
 
-  void submit(answer){
-    if(answers[questionNum] == answer){
+    return questionNum;
+  }
+
+  int currentQuestionNum;
+
+  void submit(answer, currentQuestionNum){
+    int questionNum = currentQuestionNum;
+    bool qAnswer = quizBrain.questionBank[questionNum].questionAnswer;
+
+    dev.log('$qAnswer, your answer $answer');
+    if(quizBrain.questionBank[questionNum].questionAnswer == answer){
+
       setState(() {
         scorekeeper.add(
             Icon(
@@ -60,23 +69,17 @@ class _QuizPageState extends State<QuizPage> {
       });
     }
 
-    int l = questions.length -1;
-    dev.log('$questionNum and $l');
-    if(questionNum < (questions.length - 1)) {
+    setState(() {
+      currentQuestionNum = randomQuestionNum();
+    });
 
-      setState(() {
-        questionNum++;
-      });
-    }
-    else {
-      setState(() {
-        questionNum = questionNum - (questions.length - 1);
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+
+    currentQuestionNum = randomQuestionNum();
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -87,7 +90,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                questions[questionNum],
+                quizBrain.questionBank[currentQuestionNum].questionText,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -111,7 +114,7 @@ class _QuizPageState extends State<QuizPage> {
                 ),
               ),
               onPressed: () {
-                submit(true);
+                submit(true, currentQuestionNum);
                 //The user picked true.
               },
             ),
@@ -130,7 +133,7 @@ class _QuizPageState extends State<QuizPage> {
                 ),
               ),
               onPressed: () {
-                submit(false);
+                submit(false, currentQuestionNum);
                 //The user picked false.
               },
             ),
